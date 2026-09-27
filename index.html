@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GENE MONOPOLY V4</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #e9eef3;
+    color: #17202a;
+}
+
+header {
+    background: #182848;
+    color: white;
+    text-align: center;
+    padding: 18px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+header p {
+    margin: 8px 0 0;
+}
+
+.game-container {
+    max-width: 1400px;
+    margin: auto;
+    padding: 15px;
+}
+
+.setup,
+.game-area {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 18px rgba(0,0,0,.12);
+}
+
+.setup {
+    max-width: 600px;
+    margin: 30px auto;
+}
+
+.setup h2 {
+    text-align: center;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    border: 1px solid #bbb;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+button {
+    border: none;
+    border-radius: 9px;
+    padding: 11px 16px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.start-btn {
+    width: 100%;
+    margin-top: 12px;
+    background: #182848;
+    color: white;
+}
+
+.start-btn:hover {
+    background: #263c70;
+}
+
+.game-area {
+    display: none;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 18px;
+}
+
+.board-wrapper {
+    overflow-x: auto;
+}
+
+.board {
+    width: 720px;
+    height: 720px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 4px;
+    background: #202b38;
+    padding: 5px;
+    border-radius: 12px;
+}
+
+.cell {
+    background: white;
+    border-radius: 7px;
+    position: relative;
+    padding: 5px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    overflow: hidden;
+}
+
+.cell .cell-name {
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+.cell .cell-icon {
+    font-size: 22px;
+}
+
+.start-cell {
+    background: #d5f5e3;
+}
+
+.question-cell {
+    background: #d6eaf8;
+}
+
+.reward-cell {
+    background: #fcf3cf;
+}
+
+.event-cell {
+    background: #e8daef;
+}
+
+.risk-cell {
+    background: #fadbd8;
+}
+
+.science-cell {
+    background: #d1f2eb;
+}
+
+.stop-cell {
+    background: #f1948a !important;
+    border: 3px solid #922b21;
+    color: #641e16;
+}
+
+.center {
+    grid-column: 2 / 6;
+    grid-row: 2 / 6;
+    background: #f8f9f9;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    overflow-y: auto;
+}
+
+.center h2 {
+    margin: 5px;
+}
+
+.center .dna {
+    font-size: 45px;
+}
+
+.center p {
+    margin: 7px;
+}
+
+.player-token {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: white;
+    margin: 2px;
+    font-size: 13px;
+    border: 2px solid white;
+}
+
+.tokens {
+    min-height: 32px;
+}
+
+.player-panel {
+    background: #f7f9f9;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 10px;
+}
+
+.player-card {
+    padding: 10px;
+    border-radius: 8px;
+    background: white;
+    margin-bottom: 8px;
+    border-left: 6px solid #777;
+}
+
+.player-card.active {
+    border-left-color: #182848;
+    background: #eef2ff;
+}
+
+.player-card.finished {
+    opacity: .55;
+}
+
+.score {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.length {
+    font-weight: bold;
+}
+
+.control-panel {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.dice {
+    font-size: 55px;
+    margin: 8px;
+}
+
+.roll-btn {
+    background: #182848;
+    color: white;
+    width: 100%;
+}
+
+.roll-btn:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+.log {
+    background: #17202a;
+    color: #ecf0f1;
+    padding: 12px;
+    border-radius: 10px;
+    height: 170px;
+    overflow-y: auto;
+    text-align: left;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.modal-box {
+    background: white;
+    width: min(600px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 15px;
+    padding: 22px;
+}
+
+.modal-box h2 {
+    margin-top: 0;
+}
+
+.answer-btn {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    background: #eef2f7;
+    text-align: left;
+}
+
+.answer-btn:hover {
+    background: #dce6f2;
+}
+
+.result {
+    text-align: center;
+}
+
+.result-row {
+    background: #f4f6f7;
+    padding: 13px;
+    border-radius: 9px;
+    margin: 8px 0;
+    font-size: 18px;
+}
+
+.winner {
+    background: #fcf3cf;
+    border: 2px solid #f1c40f;
+    padding: 18px;
+    border-radius: 12px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.status {
+    padding: 10px;
+    background: #eaf2f8;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+@media(max-width: 1000px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width: 750px) {
+    .board {
+        width: 600px;
+        height: 600px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🧬 GENE MONOPOLY V4</h1>
+    <p>Hành trình khám phá cơ chế dịch mã</p>
+</header>
+
+<div class="game-container">
+
+<!-- ================= SETUP ================= -->
+
+<div class="setup" id="setup">
+
+    <h2>🧬 THIẾT LẬP TRÒ CHƠI</h2>
+
+    <p>Nhập tên từ 2 đến 4 người chơi:</p>
+
+    <input id="name1" placeholder="Người chơi 1">
+    <input id="name2" placeholder="Người chơi 2">
+    <input id="name3" placeholder="Người chơi 3 (không bắt buộc)">
+    <input id="name4" placeholder="Người chơi 4 (không bắt buộc)">
+
+    <button class="start-btn" onclick="startGame()">
+        🚀 BẮT ĐẦU
+    </button>
+
+    <hr>
+
+    <p>
+        🛑 <b>UAA – UAG – UGA</b> là các mã kết thúc.
+        Khi một người chơi gặp mã kết thúc, người đó dừng chơi.
+    </p>
+
+</div>
+
+<!-- ================= GAME ================= -->
+
+<div class="game-area" id="gameArea">
+
+    <div class="layout">
+
+        <div class="board-wrapper">
+            <div class="board" id="board"></div>
+        </div>
+
+        <div>
+
+            <div class="status" id="status">
+                Đang chuẩn bị...
+            </div>
+
+            <div class="player-panel" id="playerPanel"></div>
+
+            <div class="control-panel">
+
+                <div class="dice" id="dice">
+                    🎲
+                </div>
+
+                <button
+                    class="roll-btn"
+                    id="rollBtn"
+                    onclick="rollDice()">
+                    🎲 ĐỔ XÚC XẮC
+                </button>
+
+            </div>
+
+            <div class="log" id="log"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<!-- ================= QUESTION MODAL ================= -->
+
+<div class="modal" id="questionModal">
+
+    <div class="modal-box">
+
+        <h2 id="questionTitle">
+            ❓ CÂU HỎI
+        </h2>
+
+        <p id="questionText"></p>
+
+        <div id="answers"></div>
+
+    </div>
+
+</div>
+
+<!-- ================= STOP MODAL ================= -->
+
+<div class="modal" id="stopModal">
+
+    <div class="modal-box result">
+
+        <h2>🛑 MÃ KẾT THÚC</h2>
+
+        <div id="stopText"></div>
+
+        <br>
+
+        <button onclick="closeStopModal()">
+            ✅ XÁC NHẬN
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ================= RESULT MODAL ================= -->
+
+<div class="modal" id="resultModal">
+
+    <div class="modal-box result">
+
+        <h2>🏆 KẾT QUẢ CUỐI CÙNG</h2>
+
+        <div id="resultContent"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   DỮ LIỆU TRÒ CHƠI
+===================================================== */
+
+const stopCodons = ["UAA", "UAG", "UGA"];
+
+const players = [];
+
+let currentPlayer = 0;
+let rolling = false;
+let gameFinished = false;
+let round = 1;
+
+let stopPositions = [];
+
+let pendingQuestion = null;
+
+const playerIcons = ["🔵", "🟢", "🟠", "🟣"];
+
+
+/* =====================================================
+   CÁC Ô TRÊN BÀN
+===================================================== */
+
+const cells = [
+
+    {name:"START", type:"START", icon:"🚀"},
+
+    {name:"DNA", type:"science", icon:"🧬"},
+    {name:"CÂU HỎI", type:"question", icon:"❓"},
+    {name:"mRNA", type:"science", icon:"🧪"},
+    {name:"THƯỞNG", type:"reward", icon:"🎁"},
+    {name:"tRNA", type:"science", icon:"🔵"},
+
+    {name:"RIBOSOME", type:"science", icon:"🧫"},
+    {name:"CÂU HỎI", type:"question", icon:"❓"},
+    {name:"CODON", type:"science", icon:"🧬"},
+    {name:"SỰ KIỆN", type:"event", icon:"🎲"},
+    {name:"AMINO ACID", type:"science", icon:"🧪"},
+
+    {name:"CÂU HỎI", type:"question", icon:"❓"},
+    {name:"DỊCH MÃ", type:"science", icon:"🔬"},
+    {name:"RỦI RO", type:"risk", icon:"⚠️"},
+    {name:"PROTEIN", type:"science", icon:"🧬"},
+    {name:"CÂU HỎI", type:"question", icon:"❓"},
+
+    {name:"tRNA", type:"science", icon:"🔵"},
+    {name:"THƯỞNG", type:"reward", icon:"🎁"},
+    {name:"mRNA", type:"science", icon:"🧪"},
+    {name:"CÂU HỎI", type:"question", icon:"❓"},
+    {name:"RIBOSOME", type:"science", icon:"🧫"},
+
+    {name:"SỰ KIỆN", type:"event", icon:"🎲"},
+    {name:"CODON", type:"science", icon:"🧬"},
+    {name:"CÂU HỎI", type:"question", icon:"❓"},
+    {name:"DNA", type:"science", icon:"🧬"},
+    {name:"THƯỞNG", type:"reward", icon:"🎁"}
+
+];
+
+
+/* =====================================================
+   TỌA ĐỘ BÀN CỜ
+===================================================== */
+
+const positions = [
+
+    [6,1],
+    [6,2],
+    [6,3],
+    [6,4],
+    [6,5],
+    [6,6],
+
+    [5,6],
+    [4,6],
+    [3,6],
+    [2,6],
+    [1,6],
+
+    [1,5],
+    [1,4],
+    [1,3],
+    [1,2],
+    [1,1],
+
+    [2,1],
+    [3,1],
+    [4,1],
+    [5,1],
+
+    [5,2],
+    [5,3],
+    [5,4],
+    [5,5],
+    [4,5],
+    [3,5]
+];
+
+
+/* =====================================================
+   CÂU HỎI
+===================================================== */
+
+const questions = [
+
+    {
+        q:"Bộ ba nào là mã kết thúc?",
+        a:["A. AUG","B. UAA","C. UGG","D. GCU"],
+        correct:1
+    },
+
+    {
+        q:"Bộ ba mã hóa amino acid trên mRNA được gọi là gì?",
+        a:["A. Anticodon","B. Codon","C. Gene","D. Nucleotide"],
+        correct:1
+    },
+
+    {
+        q:"Bào quan thực hiện quá trình dịch mã là gì?",
+        a:["A. Nhân","B. Ribosome","C. Lysosome","D. Golgi"],
+        correct:1
+    },
+
+    {
+        q:"Phân tử nào vận chuyển amino acid đến ribosome?",
+        a:["A. DNA","B. mRNA","C. tRNA","D. rRNA"],
+        correct:2
+    },
+
+    {
+        q:"Bộ ba mở đầu phổ biến trên mRNA là gì?",
+        a:["A. AUG","B. UAA","C. UGA","D. UAG"],
+        correct:0
+    },
+
+    {
+        q:"Anticodon nằm trên phân tử nào?",
+        a:["A. DNA","B. mRNA","C. tRNA","D. Protein"],
+        correct:2
+    },
+
+    {
+        q:"Kết quả trực tiếp của quá trình dịch mã là gì?",
+        a:["A. DNA","B. RNA","C. Chuỗi polypeptide","D. Gene"],
+        correct:2
+    },
+
+    {
+        q:"Trong quá trình dịch mã, codon trên mRNA bắt cặp với gì?",
+        a:["A. Gene","B. Anticodon","C. DNA","D. Protein"],
+        correct:1
+    },
+
+    {
+        q:"Ba mã kết thúc là:",
+        a:["A. AUG, UAA, UGA","B. UAA, UAG, UGA","C. UGG, UGA, AUG","D. GCU, UAA, UAG"],
+        correct:1
+    },
+
+    {
+        q:"Dịch mã là quá trình tổng hợp:",
+        a:["A. DNA","B. RNA","C. Protein","D. Nucleotide"],
+        correct:2
+    }
+
+];
+
+
+/* =====================================================
+   BẮT ĐẦU GAME
+===================================================== */
+
+function startGame(){
+
+    const names = [
+        document.getElementById("name1").value.trim(),
+        document.getElementById("name2").value.trim(),
+        document.getElementById("name3").value.trim(),
+        document.getElementById("name4").value.trim()
+    ];
+
+    if(!names[0]) names[0] = "Người chơi 1";
+    if(!names[1]) names[1] = "Người chơi 2";
+
+    players.length = 0;
+
+    names.forEach((name, index)=>{
+
+        if(name){
+
+            players.push({
+
+                name:name,
+
+                position:0,
+
+                score:500,
+
+                length:0,
+
+                active:true,
+
+                finished:false,
+
+                rounds:0,
+
+                icon:playerIcons[index]
+
+            });
+
+        }
+
+    });
+
+    if(players.length < 2){
+
+        alert("Cần ít nhất 2 người chơi!");
+
+        return;
+
+    }
+
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
+
+    createBoard();
+
+    randomizeStops();
+
+    updateUI();
+
+    logMessage("🚀 Trò chơi bắt đầu!");
+
+    logMessage("🧬 Ba mã kết thúc UAA, UAG, UGA đã được đặt.");
+
+    updateStatus();
+
+}
+
+
+/* =====================================================
+   TẠO BÀN
+===================================================== */
+
+function createBoard(){
+
+    const board = document.getElementById("board");
+
+    board.innerHTML = "";
+
+    const center = document.createElement("div");
+
+    center.className = "center";
+
+    center.innerHTML = `
+        <div class="dna">🧬</div>
+
+        <h2>CƠ CHẾ DỊCH MÃ</h2>
+
+        <p>
+        Ribosome đọc codon trên mRNA
+        và ghép amino acid.
+        </p>
+
+        <p>
+        🛑 UAA – UAG – UGA
+        </p>
+
+        <p>
+        Ai gặp mã kết thúc trước sẽ
+        dừng cuộc chơi của riêng mình.
+        </p>
+
+        <p>
+        🏆 Cuối cùng, người có
+        <b>độ dài chuỗi polypeptide</b>
+        lớn nhất sẽ chiến thắng.
+        </p>
+    `;
+
+    board.appendChild(center);
+
+
+    cells.forEach((cell,index)=>{
+
+        const div = document.createElement("div");
+
+        div.className = "cell";
+
+        const [row,col] = positions[index];
+
+        div.style.gridRow = row;
+        div.style.gridColumn = col;
+
+        div.id = "cell-" + index;
+
+        if(cell.type === "START")
+            div.classList.add("start-cell");
+
+        if(cell.type === "question")
+            div.classList.add("question-cell");
+
+        if(cell.type === "reward")
+            div.classList.add("reward-cell");
+
+        if(cell.type === "event")
+            div.classList.add("event-cell");
+
+        if(cell.type === "risk")
+            div.classList.add("risk-cell");
+
+        if(cell.type === "science")
+            div.classList.add("science-cell");
+
+
+        div.innerHTML = `
+            <div class="cell-icon">${cell.icon}</div>
+            <div class="cell-name">${cell.name}</div>
+            <div class="tokens"></div>
+        `;
+
+        board.appendChild(div);
+
+    });
+
+}
+
+
+/* =====================================================
+   MÃ KẾT THÚC
+===================================================== */
+
+function randomizeStops(){
+
+    stopPositions = [];
+
+    while(stopPositions.length < 3){
+
+        const position =
+            Math.floor(Math.random() * cells.length);
+
+        if(position === 0)
+            continue;
+
+        if(stopPositions.includes(position))
+            continue;
+
+        stopPositions.push(position);
+
+    }
+
+    renderStops();
+
+}
+
+
+function renderStops(){
+
+    document.querySelectorAll(".cell")
+        .forEach(cell=>{
+
+            cell.classList.remove("stop-cell");
+
+        });
+
+
+    stopPositions.forEach((position,index)=>{
+
+        const cell =
+            document.getElementById("cell-"+position);
+
+        if(!cell) return;
+
+        cell.classList.add("stop-cell");
+
+        const tokens =
+            cell.querySelector(".tokens");
+
+        cell.querySelector(".cell-name").innerHTML =
+            "🛑 " + stopCodons[index];
+
+    });
+
+}
+
+
+/* =====================================================
+   TOKEN NGƯỜI CHƠI
+===================================================== */
+
+function updateTokens(){
+
+    document.querySelectorAll(".tokens")
+        .forEach(t=>t.innerHTML = "");
+
+
+    players.forEach(player=>{
+
+        const cell =
+            document.getElementById("cell-"+player.position);
+
+        if(!cell) return;
+
+        const tokens =
+            cell.querySelector(".tokens");
+
+        const token =
+            document.createElement("span");
+
+        token.className = "player-token";
+
+        token.innerHTML = player.icon;
+
+        token.title = player.name;
+
+        tokens.appendChild(token);
+
+    });
+
+}
+
+
+/* =====================================================
+   BẢNG THÔNG TIN
+===================================================== */
+
+function updateUI(){
+
+    updateTokens();
+
+    const panel =
+        document.getElementById("playerPanel");
+
+    panel.innerHTML = "";
+
+    players.forEach((player,index)=>{
+
+        const card =
+            document.createElement("div");
+
+        card.className = "player-card";
+
+        if(index === currentPlayer &&
+           player.active){
+
+            card.classList.add("active");
+
+        }
+
+        if(player.finished){
+
+            card.classList.add("finished");
+
+        }
+
+        card.innerHTML = `
+
+            <div>
+                ${player.icon}
+                <b>${player.name}</b>
+            </div>
+
+            <div>
+                📏 Độ dài:
+                <span class="length">
+                    ${player.length} aa
+                </span>
+            </div>
+
+            <div>
+                💰 Điểm:
+                <span class="score">
+                    ${player.score}
+                </span>
+            </div>
+
+            <div>
+                🔄 Vòng:
+                ${player.rounds}
+            </div>
+
+            <div>
+                ${
+                    player.finished
+                    ? "🛑 ĐÃ KẾT THÚC"
+                    : "🟢 ĐANG CHƠI"
+                }
+            </div>
+        `;
+
+        panel.appendChild(card);
+
+    });
+
+}
+
+
+/* =====================================================
+   ĐỔ XÚC XẮC
+===================================================== */
+
+function rollDice(){
+
+    if(rolling || gameFinished)
+        return;
+
+    const player = players[currentPlayer];
+
+    if(!player.active)
+        return;
+
+    rolling = true;
+
+    document.getElementById("rollBtn")
+        .disabled = true;
+
+
+    const dice =
+        Math.floor(Math.random()*6)+1;
+
+    document.getElementById("dice")
+        .textContent = ["⚀","⚁","⚂","⚃","⚄","⚅"][dice-1];
+
+
+    logMessage(
+        `🎲 ${player.name} đổ được ${dice}`
+    );
+
+
+    movePlayer(player,dice);
+
+}
+
+
+/* =====================================================
+   DI CHUYỂN
+===================================================== */
+
+function movePlayer(player,steps){
+
+    let count = 0;
+
+    const timer =
+        setInterval(()=>{
+
+            player.position++;
+
+            if(player.position >= cells.length){
+
+                player.position = 0;
+
+                player.rounds++;
+
+                player.score += 100;
+
+                player.length += 100;
+
+                logMessage(
+                    `🔄 ${player.name} hoàn thành vòng ${player.rounds} (+100 aa)`
+                );
+
+                randomizeStops();
+
+            }
+
+            updateTokens();
+
+            updateUI();
+
+            count++;
+
+            if(count >= steps){
+
+                clearInterval(timer);
+
+                setTimeout(()=>{
+
+                    arriveCell(player);
+
+                },400);
+
+            }
+
+        },250);
+
+}
+
+
+/* =====================================================
+   XỬ LÝ Ô
+===================================================== */
+
+function arriveCell(player){
+
+    const position = player.position;
+
+
+    // KIỂM TRA MÃ KẾT THÚC
+
+    const stopIndex =
+        stopPositions.indexOf(position);
+
+
+    if(stopIndex !== -1){
+
+        const codon =
+            stopCodons[stopIndex];
+
+        finishPlayer(player,codon);
+
+        return;
+
+    }
+
+
+    const cell = cells[position];
+
+
+    if(cell.type === "question"){
+
+        openQuestion();
+
+        return;
+
+    }
+
+
+    if(cell.type === "reward"){
+
+        player.score += 150;
+
+        player.length += 150;
+
+        logMessage(
+            `🎁 ${player.name} nhận +150 aa`
+        );
+
+    }
+
+
+    else if(cell.type === "risk"){
+
+        player.score -= 100;
+
+        player.length =
+            Math.max(0,player.length-100);
+
+        logMessage(
+            `⚠️ ${player.name} mất 100 aa`
+        );
+
+    }
+
+
+    else if(cell.type === "event"){
+
+        eventCard(player);
+
+        return;
+
+    }
+
+
+    else if(cell.type === "science"){
+
+        player.length += 50;
+
+        player.score += 50;
+
+        logMessage(
+            `🧬 ${player.name} nhận +50 aa`
+        );
+
+    }
+
+
+    updateUI();
+
+    setTimeout(nextTurn,800);
+
+}
+
+
+/* =====================================================
+   GẶP MÃ KẾT THÚC
+===================================================== */
+
+function finishPlayer(player,codon){
+
+    player.active = false;
+
+    player.finished = true;
+
+    logMessage(
+        `🛑 ${player.name} đã gặp mã kết thúc ${codon}!`
+    );
+
+
+    document.getElementById("stopText").innerHTML = `
+
+        <h3>${player.icon} ${player.name}</h3>
+
+        <p>
+            Người chơi đã gặp mã kết thúc:
+        </p>
+
+        <div style="font-size:45px;font-weight:bold;">
+            ${codon}
+        </div>
+
+        <p>
+            🛑 Quá trình dịch mã của
+            người chơi này kết thúc.
+        </p>
+
+        <p>
+            📏 Độ dài hiện tại:
+            <b>${player.length} aa</b>
+        </p>
+
+        <p>
+            Những người chơi khác vẫn tiếp tục!
+        </p>
+
+    `;
+
+    document.getElementById("stopModal")
+        .style.display = "flex";
+
+    updateUI();
+
+}
+
+
+function closeStopModal(){
+
+    document.getElementById("stopModal")
+        .style.display = "none";
+
+
+    if(allFinished()){
+
+        finishGame();
+
+        return;
+
+    }
+
+
+    nextTurn();
+
+}
+
+
+/* =====================================================
+   CÂU HỎI
+===================================================== */
+
+function openQuestion(){
+
+    const question =
+        questions[
+            Math.floor(Math.random()*questions.length)
+        ];
+
+    pendingQuestion = question;
+
+    document.getElementById("questionText")
+        .textContent = question.q;
+
+    const answers =
+        document.getElementById("answers");
+
+    answers.innerHTML = "";
+
+    question.a.forEach((answer,index)=>{
+
+        const button =
+            document.createElement("button");
+
+        button.className = "answer-btn";
+
+        button.textContent = answer;
+
+        button.onclick = ()=>{
+            checkAnswer(index);
+        };
+
+        answers.appendChild(button);
+
+    });
+
+
+    document.getElementById("questionModal")
+        .style.display = "flex";
+
+}
+
+
+function checkAnswer(index){
+
+    const player = players[currentPlayer];
+
+    if(index === pendingQuestion.correct){
+
+        player.score += 200;
+
+        player.length += 200;
+
+        logMessage(
+            `✅ ${player.name} trả lời đúng! +200 aa`
+        );
+
+    }else{
+
+        player.score -= 50;
+
+        logMessage(
+            `❌ ${player.name} trả lời sai! -50 điểm`
+        );
+
+    }
+
+
+    document.getElementById("questionModal")
+        .style.display = "none";
+
+    pendingQuestion = null;
+
+    updateUI();
+
+    setTimeout(nextTurn,700);
+
+}
+
+
+/* =====================================================
+   THẺ SỰ KIỆN
+===================================================== */
+
+function eventCard(player){
+
+    const events = [
+
+        {
+            text:"🧬 Ribosome hoạt động hiệu quả! +200 aa",
+            score:200,
+            length:200
+        },
+
+        {
+            text:"⚡ Dịch mã diễn ra nhanh! +150 aa",
+            score:150,
+            length:150
+        },
+
+        {
+            text:"⚠️ Một amino acid bị thiếu! -100 aa",
+            score:-100,
+            length:-100
+        },
+
+        {
+            text:"🎁 Nhận thêm nguyên liệu! +100 aa",
+            score:100,
+            length:100
+        }
+
+    ];
+
+
+    const event =
+        events[
+            Math.floor(Math.random()*events.length)
+        ];
+
+
+    player.score += event.score;
+
+    player.length =
+        Math.max(0,player.length+event.length);
+
+
+    logMessage(
+        `${player.name}: ${event.text}`
+    );
+
+
+    updateUI();
+
+    setTimeout(nextTurn,900);
+
+}
+
+
+/* =====================================================
+   CHUYỂN LƯỢT
+===================================================== */
+
+function nextTurn(){
+
+    if(allFinished()){
+
+        finishGame();
+
+        return;
+
+    }
+
+
+    let attempts = 0;
+
+    do{
+
+        currentPlayer++;
+
+        if(currentPlayer >= players.length)
+            currentPlayer = 0;
+
+        attempts++;
+
+    }
+    while(
+        !players[currentPlayer].active &&
+        attempts <= players.length
+    );
+
+
+    if(!players[currentPlayer].active){
+
+        finishGame();
+
+        return;
+
+    }
+
+
+    rolling = false;
+
+    document.getElementById("rollBtn")
+        .disabled = false;
+
+    updateStatus();
+
+    updateUI();
+
+}
+
+
+/* =====================================================
+   KIỂM TRA TẤT CẢ ĐÃ KẾT THÚC
+===================================================== */
+
+function allFinished(){
+
+    return players.every(
+        player => player.finished
+    );
+
+}
+
+
+/* =====================================================
+   KẾT THÚC GAME
+===================================================== */
+
+function finishGame(){
+
+    gameFinished = true;
+
+    document.getElementById("rollBtn")
+        .disabled = true;
+
+
+    const ranking =
+        [...players].sort(
+            (a,b)=>b.length-a.length
+        );
+
+
+    let html = "";
+
+
+    ranking.forEach((player,index)=>{
+
+        let medal = "";
+
+        if(index === 0) medal = "🥇";
+        else if(index === 1) medal = "🥈";
+        else if(index === 2) medal = "🥉";
+        else medal = `${index+1}.`;
+
+
+        html += `
+
+            <div class="result-row">
+
+                ${medal}
+
+                <b>${player.name}</b>
+
+                <br>
+
+                📏 ${player.length} aa
+
+                &nbsp; | &nbsp;
+
+                💰 ${player.score} điểm
+
+            </div>
+
+        `;
+
+    });
+
+
+    const winner = ranking[0];
+
+
+    html += `
+
+        <div class="winner">
+
+            🏆 CHIẾN THẮNG
+
+            <br><br>
+
+            ${winner.icon}
+            ${winner.name}
+
+            <br>
+
+            📏 ${winner.length} aa
+
+            <br>
+
+            <small>
+                Có độ dài chuỗi polypeptide lớn nhất!
+            </small>
+
+        </div>
+
+        <br>
+
+        <button onclick="location.reload()">
+            🔄 CHƠI LẠI
+        </button>
+
+    `;
+
+
+    document.getElementById("resultContent")
+        .innerHTML = html;
+
+
+    document.getElementById("resultModal")
+        .style.display = "flex";
+
+
+    logMessage(
+        `🏆 ${winner.name} chiến thắng!`
+    );
+
+}
+
+
+/* =====================================================
+   TRẠNG THÁI
+===================================================== */
+
+function updateStatus(){
+
+    const player = players[currentPlayer];
+
+    if(!player) return;
+
+
+    document.getElementById("status")
+        .innerHTML = `
+
+            🎮 Lượt của:
+
+            <b>
+                ${player.icon}
+                ${player.name}
+            </b>
+
+            <br>
+
+            📏 Độ dài:
+            <b>${player.length} aa</b>
+
+            <br>
+
+            🔄 Vòng:
+            ${player.rounds}
+
+        `;
+
+}
+
+
+/* =====================================================
+   LOG
+===================================================== */
+
+function logMessage(message){
+
+    const log =
+        document.getElementById("log");
+
+    const time =
+        new Date().toLocaleTimeString();
+
+    log.innerHTML =
+        `<div>[${time}] ${message}</div>` +
+        log.innerHTML;
+
+}
+
+</script>
+
+</body>
+</html>
